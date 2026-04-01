@@ -6,11 +6,10 @@
   <title>자기소개서 AI 생성기</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://js.tosspayments.com/v2/standard"></script>
   <style>
     :root {
       --bg1: #0d0d1a;
-      --bg2: #1a1040;
-      --bg3: #0d1a2e;
       --glass: rgba(255,255,255,0.06);
       --glass-border: rgba(255,255,255,0.12);
       --glass-hover: rgba(255,255,255,0.1);
@@ -21,14 +20,12 @@
       --text-muted: #94a3b8;
       --input-bg: rgba(255,255,255,0.05);
       --input-border: rgba(255,255,255,0.15);
-      --input-focus: rgba(167,139,250,0.5);
       --success: #34d399;
+      --gold: #fbbf24;
       --radius: 16px;
       --radius-sm: 10px;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
       background: var(--bg1);
@@ -37,606 +34,218 @@
       overflow-x: hidden;
     }
 
-    /* ── 배경 애니메이션 ── */
+    /* ── 배경 ── */
     .bg-wrap {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
+      position: fixed; inset: 0; z-index: 0;
       background: radial-gradient(ellipse 80% 60% at 20% 10%, #2d1b69 0%, transparent 60%),
                   radial-gradient(ellipse 60% 50% at 80% 90%, #1e3a5f 0%, transparent 60%),
                   radial-gradient(ellipse 50% 40% at 50% 50%, #1a0a3e 0%, transparent 70%),
                   var(--bg1);
     }
-
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.35;
-      animation: float 8s ease-in-out infinite;
-    }
-    .orb1 { width: 400px; height: 400px; background: #7c3aed; top: -100px; left: -100px; animation-delay: 0s; }
-    .orb2 { width: 300px; height: 300px; background: #1d4ed8; bottom: -50px; right: -80px; animation-delay: -3s; }
-    .orb3 { width: 250px; height: 250px; background: #be185d; top: 40%; left: 60%; animation-delay: -5s; }
-
+    .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.35; animation: float 8s ease-in-out infinite; }
+    .orb1 { width:400px;height:400px;background:#7c3aed;top:-100px;left:-100px;animation-delay:0s; }
+    .orb2 { width:300px;height:300px;background:#1d4ed8;bottom:-50px;right:-80px;animation-delay:-3s; }
+    .orb3 { width:250px;height:250px;background:#be185d;top:40%;left:60%;animation-delay:-5s; }
     @keyframes float {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(30px, -40px) scale(1.05); }
-      66% { transform: translate(-20px, 30px) scale(0.95); }
+      0%,100%{transform:translate(0,0) scale(1)}
+      33%{transform:translate(30px,-40px) scale(1.05)}
+      66%{transform:translate(-20px,30px) scale(0.95)}
     }
 
     /* ── 레이아웃 ── */
-    .page {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px 80px;
-    }
+    .page { position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px 80px; }
 
-    /* ── 헤더 ── */
-    .hero {
-      text-align: center;
-      margin-bottom: 48px;
-      max-width: 600px;
-    }
-
+    /* ── 히어로 ── */
+    .hero { text-align:center;margin-bottom:48px;max-width:600px; }
     .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(167,139,250,0.15);
-      border: 1px solid rgba(167,139,250,0.3);
-      border-radius: 100px;
-      padding: 6px 16px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--accent);
-      margin-bottom: 20px;
-      letter-spacing: 0.05em;
+      display:inline-flex;align-items:center;gap:8px;
+      background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);
+      border-radius:100px;padding:6px 16px;font-size:0.8rem;font-weight:600;
+      color:var(--accent);margin-bottom:20px;letter-spacing:0.05em;
     }
-
-    .hero-badge::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
-
+    .hero-badge::before { content:'';width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
     .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: 800;
-      line-height: 1.15;
-      margin-bottom: 16px;
-      background: linear-gradient(135deg, #e2d9f3 0%, #a78bfa 40%, #60a5fa 80%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.15;margin-bottom:16px;
+      background:linear-gradient(135deg,#e2d9f3 0%,#a78bfa 40%,#60a5fa 80%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
     }
+    .hero p { font-size:1.05rem;color:var(--text-muted);line-height:1.7; }
 
-    .hero p {
-      font-size: 1.05rem;
-      color: var(--text-muted);
-      line-height: 1.7;
-    }
-
-    /* ── 스텝 진행 바 ── */
-    .stepper {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      margin-bottom: 40px;
-      width: 100%;
-      max-width: 560px;
-    }
-
-    .step-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      flex: 1;
-      position: relative;
-    }
-
+    /* ── 스텝 ── */
+    .stepper { display:flex;align-items:center;margin-bottom:40px;width:100%;max-width:560px; }
+    .step-item { display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;position:relative; }
     .step-item:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 18px;
-      left: calc(50% + 18px);
-      width: calc(100% - 36px);
-      height: 2px;
-      background: var(--glass-border);
-      z-index: 0;
-      transition: background 0.4s;
+      content:'';position:absolute;top:18px;left:calc(50% + 18px);
+      width:calc(100% - 36px);height:2px;background:var(--glass-border);z-index:0;transition:background 0.4s;
     }
-
-    .step-item.done:not(:last-child)::after {
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-    }
-
+    .step-item.done:not(:last-child)::after { background:linear-gradient(90deg,var(--accent),var(--accent2)); }
     .step-circle {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 2px solid var(--glass-border);
-      background: var(--glass);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      position: relative;
-      z-index: 1;
-      transition: all 0.3s;
+      width:36px;height:36px;border-radius:50%;border:2px solid var(--glass-border);
+      background:var(--glass);display:flex;align-items:center;justify-content:center;
+      font-size:0.85rem;font-weight:700;color:var(--text-muted);position:relative;z-index:1;transition:all 0.3s;
     }
-
-    .step-item.active .step-circle {
-      border-color: var(--accent);
-      background: rgba(167,139,250,0.2);
-      color: var(--accent);
-      box-shadow: 0 0 20px rgba(167,139,250,0.4);
-    }
-
-    .step-item.done .step-circle {
-      border-color: var(--success);
-      background: rgba(52,211,153,0.15);
-      color: var(--success);
-    }
-
-    .step-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .step-item.active .step-label { color: var(--accent); }
-    .step-item.done .step-label { color: var(--success); }
+    .step-item.active .step-circle { border-color:var(--accent);background:rgba(167,139,250,0.2);color:var(--accent);box-shadow:0 0 20px rgba(167,139,250,0.4); }
+    .step-item.done .step-circle { border-color:var(--success);background:rgba(52,211,153,0.15);color:var(--success); }
+    .step-label { font-size:0.75rem;font-weight:600;color:var(--text-muted);white-space:nowrap; }
+    .step-item.active .step-label { color:var(--accent); }
+    .step-item.done .step-label { color:var(--success); }
 
     /* ── 카드 ── */
     .card {
-      background: var(--glass);
-      border: 1px solid var(--glass-border);
-      border-radius: 24px;
-      padding: 36px;
-      width: 100%;
-      max-width: 760px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 25px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
-      transition: all 0.3s;
+      background:var(--glass);border:1px solid var(--glass-border);border-radius:24px;
+      padding:36px;width:100%;max-width:760px;
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      box-shadow:0 25px 60px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.08);
     }
-
-    .card-step {
-      display: none;
-    }
-    .card-step.active {
-      display: block;
-      animation: fadeSlideIn 0.4s ease;
-    }
-
-    @keyframes fadeSlideIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .card-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .card-title .icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      background: rgba(167,139,250,0.15);
-    }
-
-    .card-desc {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      margin-bottom: 28px;
-    }
+    .card-step { display:none; }
+    .card-step.active { display:block;animation:fadeSlideIn 0.4s ease; }
+    @keyframes fadeSlideIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .card-title { font-size:1.25rem;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:10px; }
+    .card-title .icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:rgba(167,139,250,0.15); }
+    .card-desc { font-size:0.88rem;color:var(--text-muted);margin-bottom:28px; }
 
     /* ── 폼 ── */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
+    .form-grid { display:grid;grid-template-columns:1fr 1fr;gap:18px; }
+    @media(max-width:600px){ .form-grid{grid-template-columns:1fr} .card{padding:24px 20px} }
+    .form-group { display:flex;flex-direction:column;gap:8px; }
+    .form-group.full { grid-column:1/-1; }
+    label { font-size:0.82rem;font-weight:600;color:var(--text-muted);letter-spacing:0.02em; }
+    input,select,textarea {
+      background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);
+      padding:12px 16px;font-size:0.95rem;font-family:inherit;color:var(--text);outline:none;
+      transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;
     }
-
-    @media (max-width: 600px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .card { padding: 24px 20px; }
+    input::placeholder,textarea::placeholder { color:rgba(148,163,184,0.5); }
+    select option { background:#1e1535;color:var(--text); }
+    input:focus,select:focus,textarea:focus {
+      border-color:var(--accent);box-shadow:0 0 0 3px rgba(167,139,250,0.15);background:rgba(255,255,255,0.07);
     }
+    textarea { resize:vertical;min-height:90px;line-height:1.6; }
 
-    .form-group { display: flex; flex-direction: column; gap: 8px; }
-    .form-group.full { grid-column: 1 / -1; }
-
-    label {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 0.02em;
-    }
-
-    input, select, textarea {
-      background: var(--input-bg);
-      border: 1.5px solid var(--input-border);
-      border-radius: var(--radius-sm);
-      padding: 12px 16px;
-      font-size: 0.95rem;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-    }
-
-    input::placeholder, textarea::placeholder { color: rgba(148,163,184,0.5); }
-
-    select option { background: #1e1535; color: var(--text); }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(167,139,250,0.15);
-      background: rgba(255,255,255,0.07);
-    }
-
-    textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
-
-    /* ── 태그 인풋 ── */
+    /* ── 태그 ── */
     .tag-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      background: var(--input-bg);
-      border: 1.5px solid var(--input-border);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
-      min-height: 50px;
-      cursor: text;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      display:flex;flex-wrap:wrap;gap:8px;background:var(--input-bg);
+      border:1.5px solid var(--input-border);border-radius:var(--radius-sm);
+      padding:10px 12px;min-height:50px;cursor:text;transition:border-color 0.2s,box-shadow 0.2s;
     }
-
-    .tag-wrap:focus-within {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(167,139,250,0.15);
-    }
-
+    .tag-wrap:focus-within { border-color:var(--accent);box-shadow:0 0 0 3px rgba(167,139,250,0.15); }
     .skill-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(167,139,250,0.18);
-      border: 1px solid rgba(167,139,250,0.3);
-      color: var(--accent);
-      border-radius: 100px;
-      padding: 4px 12px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(167,139,250,0.18);border:1px solid rgba(167,139,250,0.3);
+      color:var(--accent);border-radius:100px;padding:4px 12px;font-size:0.8rem;font-weight:600;
     }
+    .skill-tag button { background:none;border:none;color:rgba(167,139,250,0.6);cursor:pointer;font-size:1rem;line-height:1;padding:0; }
+    .skill-tag button:hover { color:var(--accent3); }
+    .tag-wrap input { background:none;border:none;outline:none;box-shadow:none;padding:4px 6px;flex:1;min-width:120px;font-size:0.9rem;color:var(--text); }
 
-    .skill-tag button {
-      background: none;
-      border: none;
-      color: rgba(167,139,250,0.6);
-      cursor: pointer;
-      font-size: 1rem;
-      line-height: 1;
-      padding: 0;
-      transition: color 0.2s;
-    }
-    .skill-tag button:hover { color: var(--accent3); }
-
-    .tag-wrap input {
-      background: none;
-      border: none;
-      outline: none;
-      box-shadow: none;
-      padding: 4px 6px;
-      flex: 1;
-      min-width: 120px;
-      font-size: 0.9rem;
-      color: var(--text);
-    }
-
-    /* ── 옵션 카드 선택 ── */
-    .option-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    @media (max-width: 480px) { .option-grid { grid-template-columns: 1fr; } }
-
+    /* ── 옵션 카드 ── */
+    .option-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:12px; }
+    @media(max-width:480px){ .option-grid{grid-template-columns:1fr} }
     .option-card {
-      background: var(--input-bg);
-      border: 1.5px solid var(--input-border);
-      border-radius: var(--radius-sm);
-      padding: 14px 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);
+      padding:14px 16px;cursor:pointer;transition:all 0.2s;display:flex;align-items:flex-start;gap:12px;
     }
+    .option-card:hover { background:var(--glass-hover);border-color:rgba(167,139,250,0.3); }
+    .option-card.selected { background:rgba(167,139,250,0.12);border-color:var(--accent);box-shadow:0 0 0 1px rgba(167,139,250,0.2); }
+    .option-card input[type="radio"] { display:none; }
+    .option-icon { font-size:1.4rem;line-height:1;margin-top:2px; }
+    .option-label strong { display:block;font-size:0.9rem;font-weight:700;color:var(--text);margin-bottom:2px; }
+    .option-label span { font-size:0.78rem;color:var(--text-muted); }
 
-    .option-card:hover { background: var(--glass-hover); border-color: rgba(167,139,250,0.3); }
-
-    .option-card.selected {
-      background: rgba(167,139,250,0.12);
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(167,139,250,0.2);
-    }
-
-    .option-card input[type="radio"] { display: none; }
-
-    .option-icon {
-      font-size: 1.4rem;
-      line-height: 1;
-      margin-top: 2px;
-    }
-
-    .option-label strong {
-      display: block;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 2px;
-    }
-
-    .option-label span {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    /* ── 슬라이더 ── */
-    .length-options {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-
-    @media (max-width: 480px) { .length-options { grid-template-columns: repeat(2, 1fr); } }
-
+    /* ── 요금제 버튼 ── */
+    .length-options { display:grid;grid-template-columns:repeat(4,1fr);gap:10px; }
+    @media(max-width:480px){ .length-options{grid-template-columns:repeat(2,1fr)} }
     .len-btn {
-      background: var(--input-bg);
-      border: 1.5px solid var(--input-border);
-      border-radius: var(--radius-sm);
-      padding: 12px 8px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 0.82rem;
-      font-weight: 600;
+      background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);
+      padding:14px 8px;cursor:pointer;text-align:center;transition:all 0.2s;
+      color:var(--text-muted);font-family:inherit;position:relative;overflow:hidden;
     }
-
-    .len-btn:hover { background: var(--glass-hover); color: var(--text); }
-
-    .len-btn.selected {
-      background: rgba(167,139,250,0.15);
-      border-color: var(--accent);
-      color: var(--accent);
+    .len-btn:hover { background:var(--glass-hover);color:var(--text); }
+    .len-btn.selected { background:rgba(167,139,250,0.12);border-color:var(--accent);color:var(--text); }
+    .len-btn .len-num { display:block;font-size:1.15rem;font-weight:800;margin-bottom:2px;color:inherit; }
+    .len-btn .len-type { display:block;font-size:0.78rem;font-weight:600;margin-bottom:6px; }
+    .len-btn .len-price {
+      display:inline-block;border-radius:100px;padding:3px 10px;font-size:0.72rem;font-weight:700;
     }
-
-    .len-btn .len-num {
-      display: block;
-      font-size: 1.1rem;
-      font-weight: 800;
-      margin-bottom: 2px;
-      color: inherit;
-    }
-
-    /* ── API 안내 ── */
-    .api-box {
-      background: rgba(251,191,36,0.07);
-      border: 1px solid rgba(251,191,36,0.2);
-      border-radius: var(--radius-sm);
-      padding: 14px 16px;
-      font-size: 0.83rem;
-      color: #fbbf24;
-      margin-bottom: 20px;
-      line-height: 1.6;
-    }
-
-    .api-box a { color: #fde68a; text-decoration: underline; }
-
-    .input-with-icon {
-      position: relative;
-    }
-    .input-with-icon input {
-      padding-right: 44px;
-    }
-    .eye-btn {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-muted);
-      font-size: 1.1rem;
-      padding: 4px;
-      transition: color 0.2s;
-    }
-    .eye-btn:hover { color: var(--accent); }
+    .len-btn.free .len-price { background:rgba(52,211,153,0.15);color:var(--success);border:1px solid rgba(52,211,153,0.3); }
+    .len-btn.paid .len-price { background:rgba(251,191,36,0.12);color:var(--gold);border:1px solid rgba(251,191,36,0.25); }
+    .len-btn.selected.paid { border-color:var(--gold);box-shadow:0 0 0 1px rgba(251,191,36,0.2); }
+    .len-btn.selected.free { border-color:var(--success);box-shadow:0 0 0 1px rgba(52,211,153,0.2); }
+    .len-badge-free { position:absolute;top:0;right:0;background:var(--success);color:#000;font-size:0.62rem;font-weight:800;padding:2px 7px;border-radius:0 var(--radius-sm) 0 6px; }
 
     /* ── 내비 버튼 ── */
-    .nav-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 28px;
-      gap: 12px;
-    }
-
+    .nav-row { display:flex;justify-content:space-between;align-items:center;margin-top:28px;gap:12px; }
     .btn-prev {
-      padding: 12px 24px;
-      background: var(--glass);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-sm);
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
+      padding:12px 24px;background:var(--glass);border:1px solid var(--glass-border);
+      border-radius:var(--radius-sm);color:var(--text-muted);font-family:inherit;
+      font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;
     }
-    .btn-prev:hover { background: var(--glass-hover); color: var(--text); }
-
+    .btn-prev:hover { background:var(--glass-hover);color:var(--text); }
     .btn-next {
-      flex: 1;
-      max-width: 300px;
-      padding: 14px 24px;
-      background: linear-gradient(135deg, #7c3aed, #3b82f6);
-      border: none;
-      border-radius: var(--radius-sm);
-      color: white;
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 8px 24px rgba(124,58,237,0.35);
-      letter-spacing: 0.01em;
+      flex:1;max-width:320px;padding:14px 24px;
+      background:linear-gradient(135deg,#7c3aed,#3b82f6);
+      border:none;border-radius:var(--radius-sm);color:white;
+      font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;
+      transition:all 0.2s;box-shadow:0 8px 24px rgba(124,58,237,0.35);letter-spacing:0.01em;
     }
+    .btn-next:hover { transform:translateY(-2px);box-shadow:0 12px 30px rgba(124,58,237,0.45); }
+    .btn-next:active { transform:translateY(0); }
+    .btn-next:disabled { opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none; }
+    .btn-next.pay-btn { background:linear-gradient(135deg,#d97706,#f59e0b);box-shadow:0 8px 24px rgba(217,119,6,0.35); }
+    .btn-next.pay-btn:hover { box-shadow:0 12px 30px rgba(217,119,6,0.45); }
+    .btn-next.free-btn { background:linear-gradient(135deg,#059669,#10b981);box-shadow:0 8px 24px rgba(5,150,105,0.35); }
+    .btn-next.free-btn:hover { box-shadow:0 12px 30px rgba(5,150,105,0.45); }
 
-    .btn-next:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(124,58,237,0.45); }
-    .btn-next:active { transform: translateY(0); }
-    .btn-next:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .spinner { display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px; }
+    @keyframes spin { to{transform:rotate(360deg)} }
 
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2.5px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: middle;
-      margin-right: 8px;
+    /* ── 결제 안내 배너 ── */
+    .pay-info {
+      background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);
+      border-radius:var(--radius-sm);padding:14px 16px;font-size:0.83rem;color:var(--gold);
+      margin-bottom:20px;line-height:1.65;display:none;
     }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .pay-info.show { display:block; }
+    .pay-info strong { color:#fde68a; }
 
     /* ── 결과 ── */
-    .result-wrap { display: none; }
-    .result-wrap.show {
-      display: block;
-      animation: fadeSlideIn 0.5s ease;
-    }
-
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .result-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .result-actions { display: flex; gap: 8px; }
-
+    .result-wrap { display:none; }
+    .result-wrap.show { display:block;animation:fadeSlideIn 0.5s ease; }
+    .result-header { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px; }
+    .result-title { font-size:1.15rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px; }
+    .result-actions { display:flex;gap:8px; }
     .btn-action {
-      padding: 9px 16px;
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1.5px solid var(--glass-border);
-      background: var(--glass);
-      color: var(--text-muted);
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      padding:9px 16px;border-radius:8px;font-family:inherit;font-size:0.82rem;font-weight:600;
+      cursor:pointer;border:1.5px solid var(--glass-border);background:var(--glass);color:var(--text-muted);
+      transition:all 0.2s;display:flex;align-items:center;gap:6px;
     }
-
-    .btn-action:hover { background: var(--glass-hover); color: var(--text); border-color: rgba(255,255,255,0.2); }
-    .btn-action.primary { background: rgba(167,139,250,0.15); border-color: rgba(167,139,250,0.4); color: var(--accent); }
-    .btn-action.primary:hover { background: rgba(167,139,250,0.25); }
-
+    .btn-action:hover { background:var(--glass-hover);color:var(--text);border-color:rgba(255,255,255,0.2); }
+    .btn-action.primary { background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.4);color:var(--accent); }
+    .btn-action.primary:hover { background:rgba(167,139,250,0.25); }
     .result-body {
-      background: rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: var(--radius-sm);
-      padding: 28px;
-      font-size: 0.96rem;
-      line-height: 2;
-      color: #e2e8f0;
-      white-space: pre-wrap;
-      min-height: 200px;
+      background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-sm);
+      padding:28px;font-size:0.96rem;line-height:2;color:#e2e8f0;white-space:pre-wrap;min-height:200px;
     }
+    .result-meta { display:flex;justify-content:space-between;align-items:center;margin-top:12px; }
+    .char-badge { background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.25);color:var(--success);border-radius:100px;padding:4px 12px;font-size:0.78rem;font-weight:600; }
+    .btn-reset { background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:0.82rem;cursor:pointer;text-decoration:underline; }
+    .btn-reset:hover { color:var(--accent3); }
 
-    .result-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 12px;
+    /* ── 토스트 ── */
+    .toast {
+      position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);
+      background:rgba(30,20,60,0.95);border:1px solid rgba(167,139,250,0.3);
+      border-radius:12px;padding:14px 24px;font-size:0.9rem;font-weight:600;
+      color:var(--text);opacity:0;transition:all 0.3s;z-index:999;pointer-events:none;
+      backdrop-filter:blur(20px);
     }
-
-    .char-badge {
-      background: rgba(52,211,153,0.12);
-      border: 1px solid rgba(52,211,153,0.25);
-      color: var(--success);
-      border-radius: 100px;
-      padding: 4px 12px;
-      font-size: 0.78rem;
-      font-weight: 600;
-    }
-
-    .btn-reset {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 0.82rem;
-      cursor: pointer;
-      text-decoration: underline;
-      transition: color 0.2s;
-    }
-    .btn-reset:hover { color: var(--accent3); }
-
-    /* ── 타이핑 커서 ── */
-    .cursor { animation: blink 1s step-end infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
+    .toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+    .toast.success { border-color:rgba(52,211,153,0.4);color:var(--success); }
+    .toast.error { border-color:rgba(248,113,113,0.4);color:#f87171; }
   </style>
 </head>
 <body>
-<!-- 배경 -->
 <div class="bg-wrap">
   <div class="orb orb1"></div>
   <div class="orb orb2"></div>
@@ -648,29 +257,20 @@
   <div class="hero">
     <div class="hero-badge">AI POWERED · GPT-4o mini 기반</div>
     <h1>나만의 자기소개서를<br/>AI가 완성합니다</h1>
-    <p>정보를 입력하면 Claude AI가 직무에 최적화된<br/>맞춤형 자기소개서를 즉시 생성합니다.</p>
+    <p>정보를 입력하면 GPT-4o mini가 직무에 최적화된<br/>맞춤형 자기소개서를 즉시 생성합니다.</p>
   </div>
 
   <!-- 스텝 -->
-  <div class="stepper" id="stepper">
-    <div class="step-item active" id="si1">
-      <div class="step-circle">1</div>
-      <span class="step-label">기본 정보</span>
-    </div>
-    <div class="step-item" id="si2">
-      <div class="step-circle">2</div>
-      <span class="step-label">경험 & 역량</span>
-    </div>
-    <div class="step-item" id="si3">
-      <div class="step-circle">3</div>
-      <span class="step-label">스타일 & 생성</span>
-    </div>
+  <div class="stepper">
+    <div class="step-item active" id="si1"><div class="step-circle">1</div><span class="step-label">기본 정보</span></div>
+    <div class="step-item" id="si2"><div class="step-circle">2</div><span class="step-label">경험 & 역량</span></div>
+    <div class="step-item" id="si3"><div class="step-circle">3</div><span class="step-label">스타일 & 생성</span></div>
   </div>
 
   <!-- 카드 -->
   <div class="card">
 
-    <!-- STEP 1 : 기본 정보 -->
+    <!-- STEP 1 -->
     <div class="card-step active" id="step1">
       <div class="card-title"><div class="icon">👤</div> 기본 정보를 입력해주세요</div>
       <div class="card-desc">이름, 지원 직무, 회사 등 핵심 정보를 작성합니다.</div>
@@ -710,14 +310,14 @@
       </div>
     </div>
 
-    <!-- STEP 2 : 경험 & 역량 -->
+    <!-- STEP 2 -->
     <div class="card-step" id="step2">
       <div class="card-title"><div class="icon">💼</div> 경험과 역량을 알려주세요</div>
       <div class="card-desc">구체적인 수치나 성과를 포함할수록 더 좋은 자기소개서가 완성됩니다.</div>
       <div class="form-grid">
         <div class="form-group full">
           <label>주요 경험 / 프로젝트</label>
-          <textarea id="experience" placeholder="예) 쇼핑몰 앱 리뉴얼 — 월간 활성 사용자 50만 달성&#10;결제 시스템 개선으로 처리 속도 30% 향상&#10;오픈소스 기여 (Star 1.2k)"></textarea>
+          <textarea id="experience" placeholder="예) 쇼핑몰 앱 리뉴얼 — 월간 활성 사용자 50만 달성&#10;결제 시스템 개선으로 처리 속도 30% 향상"></textarea>
         </div>
         <div class="form-group full">
           <label>강점 / 어필 포인트</label>
@@ -734,12 +334,12 @@
       </div>
     </div>
 
-    <!-- STEP 3 : 스타일 & 생성 -->
+    <!-- STEP 3 -->
     <div class="card-step" id="step3">
-      <div class="card-title"><div class="icon">✨</div> 스타일을 선택하고 생성하세요</div>
-      <div class="card-desc">톤, 분량, API 키를 설정하면 AI가 맞춤 자기소개서를 작성합니다.</div>
+      <div class="card-title"><div class="icon">✨</div> 스타일 선택 후 생성하세요</div>
+      <div class="card-desc">간략형은 무료, 표준형 이상은 소액 결제 후 생성됩니다.</div>
 
-      <!-- 톤 선택 -->
+      <!-- 톤 -->
       <div class="form-group" style="margin-bottom:20px;">
         <label>톤 & 스타일</label>
         <div class="option-grid" id="toneGrid">
@@ -766,34 +366,43 @@
         </div>
       </div>
 
-      <!-- 글자 수 -->
-      <div class="form-group" style="margin-bottom:24px;">
-        <label>목표 글자 수</label>
-        <div class="length-options" id="lenOpts">
-          <button class="len-btn" data-val="600" onclick="selectLen(this)"><span class="len-num">600</span>간략형</button>
-          <button class="len-btn selected" data-val="1000" onclick="selectLen(this)"><span class="len-num">1,000</span>표준형</button>
-          <button class="len-btn" data-val="1500" onclick="selectLen(this)"><span class="len-num">1,500</span>상세형</button>
-          <button class="len-btn" data-val="2000" onclick="selectLen(this)"><span class="len-num">2,000</span>심층형</button>
+      <!-- 요금제 -->
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>분량 & 요금제 선택</label>
+        <div class="length-options">
+          <button class="len-btn free selected" data-val="600" data-price="0" onclick="selectLen(this)">
+            <div class="len-badge-free">FREE</div>
+            <span class="len-num">600</span>
+            <span class="len-type">간략형</span>
+            <span class="len-price">무료</span>
+          </button>
+          <button class="len-btn paid" data-val="1000" data-price="500" onclick="selectLen(this)">
+            <span class="len-num">1,000</span>
+            <span class="len-type">표준형</span>
+            <span class="len-price">₩500</span>
+          </button>
+          <button class="len-btn paid" data-val="1500" data-price="1000" onclick="selectLen(this)">
+            <span class="len-num">1,500</span>
+            <span class="len-type">상세형</span>
+            <span class="len-price">₩1,000</span>
+          </button>
+          <button class="len-btn paid" data-val="2000" data-price="1500" onclick="selectLen(this)">
+            <span class="len-num">2,000</span>
+            <span class="len-type">심층형</span>
+            <span class="len-price">₩1,500</span>
+          </button>
         </div>
       </div>
 
-      <!-- API 키 -->
-      <div class="form-group" style="margin-bottom:20px;">
-        <div class="api-box">
-          🔑 <strong>OpenAI API 키</strong>가 필요합니다.
-          <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>에서 발급받으세요.
-          키는 브라우저(localStorage)에만 저장되며 외부로 전송되지 않습니다.
-        </div>
-        <label>API Key</label>
-        <div class="input-with-icon">
-          <input type="password" id="apiKey" placeholder="sk-…" />
-          <button class="eye-btn" id="eyeBtn" onclick="toggleKey()" title="보기/숨기기">👁</button>
-        </div>
+      <!-- 결제 안내 -->
+      <div class="pay-info" id="payInfo">
+        💳 <strong>카드 결제</strong>가 진행됩니다. 토스페이먼츠 결제창이 열리며 결제 완료 후 자기소개서가 즉시 생성됩니다.<br/>
+        결제 금액: <strong id="payAmt"></strong> · 부가세 포함
       </div>
 
       <div class="nav-row">
         <button class="btn-prev" onclick="goStep(2)">← 이전</button>
-        <button class="btn-next" id="genBtn" onclick="generate()">✨ 자기소개서 생성</button>
+        <button class="btn-next free-btn" id="genBtn" onclick="handleGenerate()">✅ 무료 생성</button>
       </div>
     </div>
 
@@ -813,14 +422,47 @@
       </div>
     </div>
 
-  </div><!-- /card -->
+  </div>
 </div>
 
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
 <script>
+  /* ══════════════════════════════════
+     ▶ 설정값 — 여기에 키를 입력하세요
+  ══════════════════════════════════ */
+  const CONFIG = {
+    OPENAI_API_KEY:  'sk-YOUR_OPENAI_KEY_HERE',   // OpenAI API 키
+    TOSS_CLIENT_KEY: 'test_ck_YOUR_TOSS_KEY_HERE', // 토스페이먼츠 클라이언트 키
+  };
+
+  /* 요금 테이블 */
+  const PLANS = {
+    '600':  { price: 0,    name: '자기소개서 간략형 (600자)' },
+    '1000': { price: 500,  name: '자기소개서 표준형 (1,000자)' },
+    '1500': { price: 1000, name: '자기소개서 상세형 (1,500자)' },
+    '2000': { price: 1500, name: '자기소개서 심층형 (2,000자)' },
+  };
+
   /* ────────── 상태 ────────── */
   let currentStep = 1;
-  let selectedLen = '1000';
+  let selectedLen = '600';
   const skills = [];
+
+  /* ────────── shake 애니 ────────── */
+  const shakeStyle = document.createElement('style');
+  shakeStyle.textContent = `@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}`;
+  document.head.appendChild(shakeStyle);
+  function shake(el) { el.style.animation='none'; el.offsetHeight; el.style.animation='shake 0.4s ease'; }
+
+  /* ────────── 토스트 ────────── */
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => t.className = 'toast', 2800);
+  }
 
   /* ────────── 스텝 이동 ────────── */
   function goStep(n) {
@@ -829,40 +471,20 @@
       const pos  = document.getElementById('position').value.trim();
       if (!name || !pos) {
         shake(document.getElementById('step1'));
-        if (!name) document.getElementById('name').focus();
-        else document.getElementById('position').focus();
+        (name ? document.getElementById('position') : document.getElementById('name')).focus();
         return;
       }
     }
-
     document.getElementById(`step${currentStep}`).classList.remove('active');
     document.getElementById(`si${currentStep}`).classList.remove('active');
     document.getElementById(`si${currentStep}`).classList.add('done');
-
     currentStep = n;
     document.getElementById(`step${currentStep}`).classList.add('active');
     document.getElementById(`si${currentStep}`).classList.remove('done');
     document.getElementById(`si${currentStep}`).classList.add('active');
-
-    if (n < 3) {
-      for (let i = n + 1; i <= 3; i++) {
-        document.getElementById(`si${i}`).classList.remove('active', 'done');
-      }
-    }
+    for (let i = n + 1; i <= 3; i++) document.getElementById(`si${i}`).classList.remove('active','done');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-
-  function shake(el) {
-    el.style.animation = 'none';
-    el.offsetHeight;
-    el.style.animation = 'shake 0.4s ease';
-  }
-
-  const style = document.createElement('style');
-  style.textContent = `@keyframes shake {
-    0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)}
-  }`;
-  document.head.appendChild(style);
 
   /* ────────── 기술 태그 ────────── */
   document.getElementById('skillInput').addEventListener('keydown', function(e) {
@@ -872,15 +494,9 @@
       if (val && !skills.includes(val)) { skills.push(val); renderTags(); }
       this.value = '';
     }
-    if (e.key === 'Backspace' && !this.value && skills.length) {
-      skills.pop(); renderTags();
-    }
+    if (e.key === 'Backspace' && !this.value && skills.length) { skills.pop(); renderTags(); }
   });
-
-  document.getElementById('tagWrap').addEventListener('click', () =>
-    document.getElementById('skillInput').focus()
-  );
-
+  document.getElementById('tagWrap').addEventListener('click', () => document.getElementById('skillInput').focus());
   function renderTags() {
     const wrap = document.getElementById('tagWrap');
     const input = document.getElementById('skillInput');
@@ -892,7 +508,6 @@
       wrap.insertBefore(tag, input);
     });
   }
-
   function removeSkill(i) { skills.splice(i, 1); renderTags(); }
 
   /* ────────── 톤 선택 ────────── */
@@ -904,27 +519,113 @@
     card.querySelector('input[type="radio"]').checked = true;
   });
 
-  /* ────────── 글자 수 ────────── */
+  /* ────────── 요금제 선택 ────────── */
   function selectLen(btn) {
     document.querySelectorAll('.len-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedLen = btn.dataset.val;
+    const price = parseInt(btn.dataset.price);
+    const genBtn = document.getElementById('genBtn');
+    const payInfo = document.getElementById('payInfo');
+
+    if (price === 0) {
+      genBtn.textContent = '✅ 무료 생성';
+      genBtn.className = 'btn-next free-btn';
+      payInfo.classList.remove('show');
+    } else {
+      genBtn.textContent = `💳 결제 후 생성 (₩${price.toLocaleString()})`;
+      genBtn.className = 'btn-next pay-btn';
+      document.getElementById('payAmt').textContent = `₩${price.toLocaleString()}`;
+      payInfo.classList.add('show');
+    }
   }
 
-  /* ────────── API 키 토글 ────────── */
-  function toggleKey() {
-    const inp = document.getElementById('apiKey');
-    inp.type = inp.type === 'password' ? 'text' : 'password';
+  /* ────────── 결제/생성 진입 ────────── */
+  async function handleGenerate() {
+    const plan = PLANS[selectedLen];
+    if (plan.price === 0) {
+      await callGPT();
+    } else {
+      await requestPayment(plan);
+    }
   }
 
-  const savedKey = localStorage.getItem('si_api_key');
-  if (savedKey) document.getElementById('apiKey').value = savedKey;
-  document.getElementById('apiKey').addEventListener('input', function() {
-    if (this.value) localStorage.setItem('si_api_key', this.value);
-  });
+  /* ────────── 토스페이먼츠 결제 ────────── */
+  async function requestPayment(plan) {
+    saveFormState();
+    try {
+      const tossPayments = TossPayments(CONFIG.TOSS_CLIENT_KEY);
+      const payment = tossPayments.payment({ customerKey: 'si_user_' + Date.now() });
+      await payment.requestPayment({
+        method: 'CARD',
+        amount: { currency: 'KRW', value: plan.price },
+        orderId: 'si_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+        orderName: plan.name,
+        successUrl: window.location.href.split('?')[0] + '?payment=success&len=' + selectedLen,
+        failUrl:    window.location.href.split('?')[0] + '?payment=fail',
+      });
+    } catch (err) {
+      if (err.code !== 'USER_CANCEL') showToast('결제 오류: ' + err.message, 'error');
+    }
+  }
 
-  /* ────────── 생성 ────────── */
-  async function generate() {
+  /* ────────── 폼 상태 저장/복원 ────────── */
+  function saveFormState() {
+    sessionStorage.setItem('si_form', JSON.stringify({
+      name:       document.getElementById('name').value,
+      position:   document.getElementById('position').value,
+      company:    document.getElementById('company').value,
+      career:     document.getElementById('career').value,
+      experience: document.getElementById('experience').value,
+      strengths:  document.getElementById('strengths').value,
+      motivation: document.getElementById('motivation').value,
+      tone:       document.querySelector('input[name="tone"]:checked')?.value || 'formal',
+      skills:     [...skills],
+      len:        selectedLen,
+    }));
+  }
+
+  function restoreFormState(data) {
+    document.getElementById('name').value       = data.name       || '';
+    document.getElementById('position').value   = data.position   || '';
+    document.getElementById('company').value    = data.company    || '';
+    document.getElementById('career').value     = data.career     || '신입';
+    document.getElementById('experience').value = data.experience || '';
+    document.getElementById('strengths').value  = data.strengths  || '';
+    document.getElementById('motivation').value = data.motivation || '';
+    const radio = document.querySelector(`input[name="tone"][value="${data.tone}"]`);
+    if (radio) { radio.checked = true; document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected')); radio.closest('.option-card')?.classList.add('selected'); }
+    if (data.skills) { skills.length = 0; data.skills.forEach(s => skills.push(s)); renderTags(); }
+    if (data.len) {
+      const btn = document.querySelector(`.len-btn[data-val="${data.len}"]`);
+      if (btn) selectLen(btn);
+    }
+  }
+
+  /* ────────── 결제 성공 처리 (리다이렉트 후) ────────── */
+  (function checkPaymentReturn() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'success') {
+      history.replaceState({}, '', window.location.pathname);
+      const saved = sessionStorage.getItem('si_form');
+      if (saved) {
+        restoreFormState(JSON.parse(saved));
+        sessionStorage.removeItem('si_form');
+      }
+      showToast('결제 완료! 자기소개서를 생성합니다…', 'success');
+      // 스텝 3으로 이동
+      currentStep = 1;
+      goStep(2);
+      setTimeout(() => goStep(3), 100);
+      setTimeout(() => callGPT(), 600);
+    } else if (params.get('payment') === 'fail') {
+      history.replaceState({}, '', window.location.pathname);
+      showToast('결제가 취소되었습니다.', 'error');
+    }
+  })();
+
+  /* ────────── GPT 호출 ────────── */
+  async function callGPT() {
     const name       = document.getElementById('name').value.trim();
     const position   = document.getElementById('position').value.trim();
     const company    = document.getElementById('company').value.trim();
@@ -933,20 +634,14 @@
     const strengths  = document.getElementById('strengths').value.trim();
     const motivation = document.getElementById('motivation').value.trim();
     const tone       = document.querySelector('input[name="tone"]:checked')?.value || 'formal';
-    const apiKey     = document.getElementById('apiKey').value.trim();
 
-    if (!apiKey) {
-      document.getElementById('apiKey').focus();
-      shake(document.getElementById('step3'));
+    if (!name || !position) {
+      showToast('이름과 지원 직무를 입력해주세요.', 'error');
+      goStep(1);
       return;
     }
 
-    const toneMap = {
-      formal: '공식적이고 전문적인',
-      friendly: '친근하고 열정적인',
-      creative: '창의적이고 개성있는',
-      concise: '간결하고 명확한'
-    };
+    const toneMap = { formal:'공식적이고 전문적인', friendly:'친근하고 열정적인', creative:'창의적이고 개성있는', concise:'간결하고 명확한' };
 
     const prompt = `당신은 한국 최고의 자기소개서 작성 전문가입니다.
 다음 지원자 정보를 바탕으로 ${toneMap[tone]} 톤의 자기소개서를 약 ${selectedLen}자 분량으로 작성해주세요.
@@ -975,10 +670,7 @@
     try {
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}` },
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           max_tokens: 2048,
@@ -995,62 +687,40 @@
       }
 
       const data = await res.json();
-      const text = data.choices[0].message.content;
-
-      // 결과 타이핑 효과
-      showResult(text);
+      showResult(data.choices[0].message.content);
 
     } catch (err) {
-      alert('오류: ' + err.message);
+      showToast('오류: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '✨ 자기소개서 생성';
+      const plan = PLANS[selectedLen];
+      btn.innerHTML = plan.price === 0 ? '✅ 무료 생성' : `💳 결제 후 생성 (₩${plan.price.toLocaleString()})`;
     }
   }
 
-  /* 타이핑 효과 */
+  /* ────────── 타이핑 효과 ────────── */
   function showResult(text) {
-    const wrap = document.getElementById('resultWrap');
-    const body = document.getElementById('resultBody');
+    document.querySelectorAll('.step-item').forEach(s => { s.classList.remove('active'); s.classList.add('done'); });
+    const wrap  = document.getElementById('resultWrap');
+    const body  = document.getElementById('resultBody');
     const badge = document.getElementById('charBadge');
-
-    // 스텝 완료
-    document.querySelectorAll('.step-item').forEach(s => {
-      s.classList.remove('active');
-      s.classList.add('done');
-    });
-
     wrap.classList.add('show');
     wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
     body.textContent = '';
     badge.textContent = '';
-
     let i = 0;
-    const speed = Math.max(10, Math.min(30, Math.floor(50000 / text.length)));
-
+    const speed = Math.max(8, Math.min(25, Math.floor(40000 / text.length)));
     function type() {
-      if (i < text.length) {
-        body.textContent += text[i++];
-        if (i % 10 === 0) body.scrollTop = body.scrollHeight;
-        setTimeout(type, speed);
-      } else {
-        badge.textContent = `총 ${text.length.toLocaleString()}자`;
-      }
+      if (i < text.length) { body.textContent += text[i++]; if (i % 10 === 0) body.scrollTop = body.scrollHeight; setTimeout(type, speed); }
+      else { badge.textContent = `총 ${text.length.toLocaleString()}자`; }
     }
     type();
   }
 
   /* ────────── 복사 / 다운로드 / 리셋 ────────── */
   function copyText() {
-    const text = document.getElementById('resultBody').textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.querySelector('.btn-action');
-      btn.textContent = '✅ 복사됨!';
-      setTimeout(() => btn.innerHTML = '📋 복사', 2000);
-    });
+    navigator.clipboard.writeText(document.getElementById('resultBody').textContent).then(() => showToast('클립보드에 복사되었습니다!', 'success'));
   }
-
   function downloadText() {
     const text = document.getElementById('resultBody').textContent;
     const name = document.getElementById('name').value || '지원자';
@@ -1061,16 +731,12 @@
     a.download = `${name}_${pos}_자기소개서.txt`;
     a.click();
   }
-
   function resetAll() {
     document.getElementById('resultWrap').classList.remove('show');
     currentStep = 1;
     document.querySelectorAll('.card-step').forEach(s => s.classList.remove('active'));
     document.getElementById('step1').classList.add('active');
-    document.querySelectorAll('.step-item').forEach((s, i) => {
-      s.classList.remove('active', 'done');
-      if (i === 0) s.classList.add('active');
-    });
+    document.querySelectorAll('.step-item').forEach((s, i) => { s.classList.remove('active','done'); if (i === 0) s.classList.add('active'); });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 </script>
