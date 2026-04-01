@@ -646,7 +646,7 @@
 <div class="page">
   <!-- 히어로 -->
   <div class="hero">
-    <div class="hero-badge">AI POWERED · CLAUDE 기반</div>
+    <div class="hero-badge">AI POWERED · GPT-4o mini 기반</div>
     <h1>나만의 자기소개서를<br/>AI가 완성합니다</h1>
     <p>정보를 입력하면 Claude AI가 직무에 최적화된<br/>맞춤형 자기소개서를 즉시 생성합니다.</p>
   </div>
@@ -780,13 +780,13 @@
       <!-- API 키 -->
       <div class="form-group" style="margin-bottom:20px;">
         <div class="api-box">
-          🔑 <strong>Anthropic API 키</strong>가 필요합니다.
-          <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>에서 발급받으세요.
+          🔑 <strong>OpenAI API 키</strong>가 필요합니다.
+          <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>에서 발급받으세요.
           키는 브라우저(localStorage)에만 저장되며 외부로 전송되지 않습니다.
         </div>
         <label>API Key</label>
         <div class="input-with-icon">
-          <input type="password" id="apiKey" placeholder="sk-ant-…" />
+          <input type="password" id="apiKey" placeholder="sk-…" />
           <button class="eye-btn" id="eyeBtn" onclick="toggleKey()" title="보기/숨기기">👁</button>
         </div>
       </div>
@@ -973,18 +973,19 @@
     btn.innerHTML = '<span class="spinner"></span> AI 작성 중…';
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-calls': 'true'
+          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: 'claude-opus-4-6',
+          model: 'gpt-4o-mini',
           max_tokens: 2048,
-          messages: [{ role: 'user', content: prompt }]
+          messages: [
+            { role: 'system', content: '당신은 한국 최고의 자기소개서 작성 전문가입니다.' },
+            { role: 'user', content: prompt }
+          ]
         })
       });
 
@@ -994,7 +995,7 @@
       }
 
       const data = await res.json();
-      const text = data.content[0].text;
+      const text = data.choices[0].message.content;
 
       // 결과 타이핑 효과
       showResult(text);
