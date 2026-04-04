@@ -8,11 +8,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <!-- Toss Payments -->
   <script src="https://js.tosspayments.com/v2/standard"></script>
-  <!-- AdSense (클라이언트 ID는 관리자 페이지에서 설정) -->
+  <!-- AdSense: 관리자 페이지에서 Publisher ID 설정 시 자동 로드 -->
   <script>
     window.adsbygoogle = window.adsbygoogle || [];
-    function adBreak(o){ adsbygoogle.push(o); }
-    function adConfig(o){ adsbygoogle.push(o); }
+    window.__adsReady = false;
+    // 실제 AdSense SDK가 로드된 후 덮어씀
+    window.adBreak  = function(o){ adsbygoogle.push(o); };
+    window.adConfig = function(o){ adsbygoogle.push(o); };
+    (function() {
+      const cfg = JSON.parse(localStorage.getItem('si_admin_config') || '{}');
+      if (!cfg.ads_client || cfg.ads_mode === 'test') return;
+      const s = document.createElement('script');
+      s.async = true;
+      s.crossOrigin = 'anonymous';
+      s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + cfg.ads_client;
+      s.onload = function() {
+        window.__adsReady = true;
+        window.adBreak  = function(o){ (window.adsbygoogle=window.adsbygoogle||[]).push(o); };
+        window.adConfig = function(o){ (window.adsbygoogle=window.adsbygoogle||[]).push(o); };
+      };
+      document.head.appendChild(s);
+    })();
   </script>
   <style>
     :root {
@@ -177,9 +193,9 @@
     <div class="ad-icon">📺</div>
     <h3>광고를 시청하면 무료로 이용됩니다</h3>
     <p>표준형 자기소개서를 무료로 받으려면<br/>광고를 끝까지 시청해주세요.</p>
-    <!-- 실제 AdSense 광고 슬롯이 여기 들어갑니다 -->
-    <div id="adSlot" style="margin-bottom:20px;min-height:60px;display:flex;align-items:center;justify-content:center">
-      <ins class="adsbygoogle" style="display:block" id="adUnit"></ins>
+    <!-- AdSense 광고 영역 (실제 광고는 adBreak API로 처리) -->
+    <div id="adSlot" style="margin-bottom:20px;min-height:60px;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,0.1);border-radius:8px;color:rgba(100,116,139,0.6);font-size:0.8rem;">
+      광고 영역
     </div>
     <div class="ad-progress"><div class="ad-progress-bar" id="adBar"></div></div>
     <div class="ad-timer" id="adTimer">광고 시청 중… 0 / 5초</div>
@@ -317,9 +333,10 @@
     return {
       OPENAI_API_KEY:    adm.openai_key  || 'sk-YOUR_OPENAI_KEY_HERE',
       TOSS_CLIENT_KEY:   adm.toss_key   || 'test_ck_YOUR_TOSS_KEY_HERE',
-      ADSENSE_CLIENT:    adm.ads_client || '',   // ca-pub-XXXXXXXX
-      ADSENSE_SLOT:      adm.ads_slot   || '',   // 슬롯 ID
-      AD_DURATION:       parseInt(adm.ad_duration || '5'),  // 광고 최소 시청 초
+      ADSENSE_CLIENT:    adm.ads_client  || '',
+      ADSENSE_SLOT:      adm.ads_slot    || '',
+      ADS_MODE:          adm.ads_mode    || 'auto',
+      AD_DURATION:       parseInt(adm.ad_duration || '5'),
       PRICE_1500:        parseInt(adm.price_1500 || '1000'),
       PRICE_2000:        parseInt(adm.price_2000 || '1500'),
     };
@@ -445,8 +462,9 @@
 
   /* ────────── 광고 흐름 ────────── */
   function startAdFlow() {
-    // AdSense 리워드 광고가 설정된 경우
-    if (CONFIG.ADSENSE_CLIENT && CONFIG.ADSENSE_SLOT && typeof adBreak === 'function') {
+    CONFIG = loadConfig();
+    const useReal = window.__adsReady && CONFIG.ADSENSE_CLIENT && CONFIG.ADSENSE_SLOT && CONFIG.ADS_MODE !== 'test';
+    if (useReal) {
       adConfig({ preloadAdBreaks: 'on', sound: 'on' });
       adBreak({
         type: 'reward',
@@ -454,10 +472,10 @@
         beforeReward: (showAdFn) => showAdFn(),
         adViewed:    () => { trackStat('ad','1000'); callGPT('ad'); },
         adDismissed: () => showToast('광고를 끝까지 시청해야 합니다.', 'error'),
-        adBreakDone: (info) => { if(info.breakStatus==='notReady') openMockAd(); }
+        adBreakDone: (info) => { if (info.breakStatus !== 'viewed' && info.breakStatus !== 'dismissed') openMockAd(); }
       });
     } else {
-      openMockAd(); // 개발/테스트: 모의 광고 표시
+      openMockAd(); // AdSense 미설정 or 테스트 모드
     }
   }
 
