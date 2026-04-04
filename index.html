@@ -234,6 +234,24 @@
             <option value="10년 이상">10년 이상</option>
           </select>
         </div>
+        <div class="form-group">
+          <label>지원 분야</label>
+          <select id="field">
+            <option value="">-- 선택 안 함 --</option>
+            <option value="IT/개발">IT/개발</option>
+            <option value="마케팅/광고">마케팅/광고</option>
+            <option value="영업/세일즈">영업/세일즈</option>
+            <option value="디자인/크리에이티브">디자인/크리에이티브</option>
+            <option value="경영/기획">경영/기획</option>
+            <option value="금융/회계">금융/회계</option>
+            <option value="의료/바이오">의료/바이오</option>
+            <option value="교육">교육</option>
+            <option value="제조/생산">제조/생산</option>
+            <option value="서비스/유통">서비스/유통</option>
+            <option value="공공/행정">공공/행정</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
         <div class="form-group full">
           <label>보유 기술 스택 (입력 후 Enter)</label>
           <div class="tag-wrap" id="tagWrap"><input type="text" id="skillInput" placeholder="React, Python, AWS… 입력 후 Enter" /></div>
@@ -538,6 +556,7 @@
     sessionStorage.setItem('si_form', JSON.stringify({
       name: document.getElementById('name').value, position: document.getElementById('position').value,
       company: document.getElementById('company').value, career: document.getElementById('career').value,
+      field: document.getElementById('field').value,
       experience: document.getElementById('experience').value, strengths: document.getElementById('strengths').value,
       motivation: document.getElementById('motivation').value,
       tone: document.querySelector('input[name="tone"]:checked')?.value || 'formal',
@@ -547,10 +566,21 @@
   function restoreFormState(d) {
     ['name','position','company','experience','strengths','motivation'].forEach(id => { if(d[id]) document.getElementById(id).value=d[id]; });
     if (d.career) document.getElementById('career').value = d.career;
+    if (d.field)  document.getElementById('field').value  = d.field;
     const radio = document.querySelector(`input[name="tone"][value="${d.tone}"]`);
     if (radio) { radio.checked=true; document.querySelectorAll('.option-card').forEach(c=>c.classList.remove('selected')); radio.closest('.option-card')?.classList.add('selected'); }
     if (d.skills) { skills.length=0; d.skills.forEach(s=>skills.push(s)); renderTags(); }
     if (d.len) { const b=document.querySelector(`.len-btn[data-val="${d.len}"]`); if(b) selectLen(b); }
+  }
+
+  /* ────────── 분야 샘플 조회 ────────── */
+  function getSample(field) {
+    if (!field) return null;
+    const samples = JSON.parse(localStorage.getItem('si_samples') || '[]');
+    const matched = samples.filter(s => s.field === field);
+    if (!matched.length) return null;
+    // 가장 최근 샘플 반환
+    return matched.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
   }
 
   /* ────────── 결제 성공 복귀 ────────── */
@@ -578,8 +608,13 @@
           experience=document.getElementById('experience').value.trim(), strengths=document.getElementById('strengths').value.trim(),
           motivation=document.getElementById('motivation').value.trim(),
           tone=document.querySelector('input[name="tone"]:checked')?.value||'formal';
+    const field = document.getElementById('field').value;
     const toneMap={formal:'공식적이고 전문적인',friendly:'친근하고 열정적인',creative:'창의적이고 개성있는',concise:'간결하고 명확한'};
-    const prompt=`당신은 한국 최고의 자기소개서 작성 전문가입니다.\n다음 지원자 정보를 바탕으로 ${toneMap[tone]} 톤의 자기소개서를 약 ${selectedLen}자 분량으로 작성해주세요.\n\n[지원자 정보]\n- 이름: ${name}\n- 지원 직무: ${position}\n- 지원 회사: ${company||'(미입력)'}\n- 경력: ${career}\n- 기술 스택: ${skills.length?skills.join(', '):'(미입력)'}\n- 주요 경험/프로젝트: ${experience||'(미입력)'}\n- 강점/어필 포인트: ${strengths||'(미입력)'}\n- 지원 동기: ${motivation||'(미입력)'}\n\n[작성 원칙]\n1. 자기소개 → 지원 동기 → 핵심 역량 및 경험 → 입사 후 포부 순으로 구성\n2. 구체적인 수치, 성과, 프로젝트명을 적극 활용\n3. 지원 직무와 회사에 최적화된 맞춤 내용으로 작성\n4. 단락 구분을 명확히 하고 흐름을 자연스럽게 연결\n5. 자기소개서 본문만 출력`;
+    const sample = getSample(field);
+    const sampleBlock = sample
+      ? `\n[참고 샘플 — ${sample.field}${sample.title ? ' / ' + sample.title : ''}]\n아래는 실제 합격 자기소개서 샘플입니다. 문체·구조·표현 방식을 참고하되, 지원자 정보에 맞게 새롭게 작성하세요.\n"""\n${sample.content}\n"""\n`
+      : '';
+    const prompt=`당신은 한국 최고의 자기소개서 작성 전문가입니다.\n다음 지원자 정보를 바탕으로 ${toneMap[tone]} 톤의 자기소개서를 약 ${selectedLen}자 분량으로 작성해주세요.\n\n[지원자 정보]\n- 이름: ${name}\n- 지원 직무: ${position}\n- 지원 회사: ${company||'(미입력)'}\n- 지원 분야: ${field||'(미선택)'}\n- 경력: ${career}\n- 기술 스택: ${skills.length?skills.join(', '):'(미입력)'}\n- 주요 경험/프로젝트: ${experience||'(미입력)'}\n- 강점/어필 포인트: ${strengths||'(미입력)'}\n- 지원 동기: ${motivation||'(미입력)'}${sampleBlock}\n\n[작성 원칙]\n1. 자기소개 → 지원 동기 → 핵심 역량 및 경험 → 입사 후 포부 순으로 구성\n2. 구체적인 수치, 성과, 프로젝트명을 적극 활용\n3. 지원 직무와 회사에 최적화된 맞춤 내용으로 작성\n4. 단락 구분을 명확히 하고 흐름을 자연스럽게 연결\n5. 자기소개서 본문만 출력`;
     const btn=document.getElementById('genBtn');
     btn.disabled=true; btn.innerHTML='<span class="spinner"></span> AI 작성 중…';
     try {

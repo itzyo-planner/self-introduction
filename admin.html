@@ -124,6 +124,37 @@
     .btn-sm { padding:10px 18px; background:var(--card); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:inherit; font-size:0.85rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:all 0.2s; }
     .btn-sm:hover { background:rgba(255,255,255,0.08); }
 
+    /* ── 샘플 관리 ── */
+    .sample-layout { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+    @media(max-width:800px){ .sample-layout{grid-template-columns:1fr} }
+    .sample-form-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:24px; position:sticky; top:24px; }
+    .sample-form-card h3 { font-size:1rem; font-weight:700; margin-bottom:4px; }
+    .sample-form-card p  { font-size:0.8rem; color:var(--muted); margin-bottom:20px; }
+    .sample-list-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+    .slc-head { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    .slc-head .slc-title { font-size:0.95rem; font-weight:700; }
+    .slc-count { font-size:0.78rem; color:var(--muted); }
+    .sample-empty { padding:40px; text-align:center; color:var(--muted); font-size:0.88rem; }
+    .sample-item { padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.04); transition:background 0.15s; }
+    .sample-item:last-child { border-bottom:none; }
+    .sample-item:hover { background:rgba(255,255,255,0.03); }
+    .si-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px; }
+    .si-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .si-field { background:rgba(124,58,237,0.15); color:var(--accent-light); border:1px solid rgba(124,58,237,0.25); border-radius:100px; padding:3px 10px; font-size:0.72rem; font-weight:700; }
+    .si-title { font-size:0.9rem; font-weight:600; color:var(--text); }
+    .si-actions { display:flex; gap:6px; flex-shrink:0; }
+    .si-btn { background:none; border:1px solid var(--border); border-radius:6px; padding:5px 10px; font-size:0.75rem; font-weight:600; cursor:pointer; font-family:inherit; color:var(--muted); transition:all 0.2s; }
+    .si-btn:hover { background:rgba(255,255,255,0.06); color:var(--text); }
+    .si-btn.del:hover { border-color:rgba(239,68,68,0.4); color:#f87171; }
+    .si-preview { font-size:0.8rem; color:var(--muted); line-height:1.6; white-space:pre-wrap; max-height:72px; overflow:hidden; position:relative; }
+    .si-preview::after { content:''; position:absolute; bottom:0; left:0; right:0; height:28px; background:linear-gradient(transparent,var(--bg)); }
+    .si-date { font-size:0.72rem; color:rgba(100,116,139,0.6); margin-top:6px; }
+    .field-count { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+    .fc-chip { background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:100px; padding:4px 12px; font-size:0.75rem; font-weight:600; color:var(--muted); cursor:pointer; transition:all 0.2s; }
+    .fc-chip:hover, .fc-chip.on { background:rgba(124,58,237,0.15); color:var(--accent-light); border-color:rgba(124,58,237,0.3); }
+    .edit-mode-banner { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:8px; padding:10px 14px; font-size:0.8rem; color:var(--warn); margin-bottom:16px; display:none; }
+    .edit-mode-banner.show { display:block; }
+
     /* ── 토스트 ── */
     .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(16px); background:rgba(20,15,40,0.95); border:1px solid rgba(167,139,250,0.3); border-radius:10px; padding:12px 22px; font-size:0.88rem; font-weight:600; color:var(--text); opacity:0; transition:all 0.3s; z-index:999; pointer-events:none; backdrop-filter:blur(16px); }
     .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
@@ -163,6 +194,7 @@
       <button class="nav-item" onclick="showSection('api',this)"><span class="ni">🔑</span> API 설정</button>
       <button class="nav-item" onclick="showSection('ads',this)"><span class="ni">📺</span> 광고 설정</button>
       <button class="nav-item" onclick="showSection('pricing',this)"><span class="ni">💰</span> 요금제 설정</button>
+      <button class="nav-item" onclick="showSection('samples',this)"><span class="ni">📁</span> 샘플 관리</button>
       <button class="nav-item" onclick="showSection('password',this)"><span class="ni">🔒</span> 보안</button>
     </div>
     <div class="sidebar-footer">
@@ -332,6 +364,79 @@
       <div class="save-ok" id="save-ok-pricing">✅ 저장되었습니다.</div>
     </div>
 
+    <!-- ── 샘플 관리 ── -->
+    <div class="section" id="sec-samples">
+      <div class="page-title">샘플 관리</div>
+      <div class="page-sub">분야별 자기소개서 샘플을 등록하면 AI가 글쓰기 참고 자료로 활용합니다.</div>
+
+      <!-- 분야 필터 -->
+      <div class="field-count" id="fieldFilter">
+        <span class="fc-chip on" data-field="all" onclick="filterSamples('all',this)">전체</span>
+        <span class="fc-chip" data-field="IT/개발" onclick="filterSamples('IT/개발',this)">IT/개발</span>
+        <span class="fc-chip" data-field="마케팅/광고" onclick="filterSamples('마케팅/광고',this)">마케팅/광고</span>
+        <span class="fc-chip" data-field="영업/세일즈" onclick="filterSamples('영업/세일즈',this)">영업/세일즈</span>
+        <span class="fc-chip" data-field="디자인/크리에이티브" onclick="filterSamples('디자인/크리에이티브',this)">디자인/크리에이티브</span>
+        <span class="fc-chip" data-field="경영/기획" onclick="filterSamples('경영/기획',this)">경영/기획</span>
+        <span class="fc-chip" data-field="금융/회계" onclick="filterSamples('금융/회계',this)">금융/회계</span>
+        <span class="fc-chip" data-field="의료/바이오" onclick="filterSamples('의료/바이오',this)">의료/바이오</span>
+        <span class="fc-chip" data-field="교육" onclick="filterSamples('교육',this)">교육</span>
+        <span class="fc-chip" data-field="제조/생산" onclick="filterSamples('제조/생산',this)">제조/생산</span>
+        <span class="fc-chip" data-field="서비스/유통" onclick="filterSamples('서비스/유통',this)">서비스/유통</span>
+        <span class="fc-chip" data-field="공공/행정" onclick="filterSamples('공공/행정',this)">공공/행정</span>
+        <span class="fc-chip" data-field="기타" onclick="filterSamples('기타',this)">기타</span>
+      </div>
+
+      <div class="sample-layout">
+        <!-- 등록 폼 -->
+        <div class="sample-form-card">
+          <h3 id="sampleFormTitle">➕ 새 샘플 등록</h3>
+          <p>샘플을 저장하면 해당 분야 선택 시 AI 프롬프트에 자동 포함됩니다.</p>
+          <input type="hidden" id="editingId" value="" />
+          <div class="edit-mode-banner" id="editBanner">✏️ 수정 모드 — 변경 후 저장을 눌러주세요.</div>
+          <div class="sf">
+            <label>분야 *</label>
+            <select id="sampleField">
+              <option value="">-- 분야 선택 --</option>
+              <option value="IT/개발">IT/개발</option>
+              <option value="마케팅/광고">마케팅/광고</option>
+              <option value="영업/세일즈">영업/세일즈</option>
+              <option value="디자인/크리에이티브">디자인/크리에이티브</option>
+              <option value="경영/기획">경영/기획</option>
+              <option value="금융/회계">금융/회계</option>
+              <option value="의료/바이오">의료/바이오</option>
+              <option value="교육">교육</option>
+              <option value="제조/생산">제조/생산</option>
+              <option value="서비스/유통">서비스/유통</option>
+              <option value="공공/행정">공공/행정</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="sf">
+            <label>샘플 제목 (선택)</label>
+            <input type="text" id="sampleTitle" placeholder="예) 신입 개발자 합격 샘플" />
+          </div>
+          <div class="sf">
+            <label>자기소개서 내용 *</label>
+            <textarea id="sampleContent" style="min-height:220px;resize:vertical;" placeholder="여기에 샘플 자기소개서 전문을 붙여넣으세요.&#10;&#10;AI가 이 샘플의 문체·구조·표현을 참고하여 새 자기소개서를 작성합니다."></textarea>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-save" style="flex:1;" onclick="saveSample()">💾 저장</button>
+            <button class="btn-sm" id="cancelEditBtn" style="display:none;" onclick="cancelEdit()">취소</button>
+          </div>
+          <div class="save-ok" id="save-ok-sample">✅ 샘플이 저장되었습니다.</div>
+        </div>
+
+        <!-- 샘플 목록 -->
+        <div class="sample-list-card">
+          <div class="slc-head">
+            <div class="slc-title">📋 저장된 샘플</div>
+            <span class="slc-count" id="sampleCount">0개</span>
+          </div>
+          <div id="sampleList"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── 보안 ── -->
     <div class="section" id="sec-password">
       <div class="page-title">보안 설정</div>
@@ -404,6 +509,7 @@
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     btn.classList.add('active');
     if (id === 'dashboard') loadStats();
+    if (id === 'samples')   renderSamples();
   }
 
   /* ── 설정 불러오기 ── */
@@ -500,6 +606,122 @@
     localStorage.removeItem(STAT_KEY);
     loadAll();
     toast('전체 초기화 완료.', 'ok');
+  }
+
+  /* ════════════════════════════════
+     샘플 관리
+  ════════════════════════════════ */
+  const SAMPLE_KEY = 'si_samples';
+  let currentFilter = 'all';
+
+  function getSamples() {
+    return JSON.parse(localStorage.getItem(SAMPLE_KEY) || '[]');
+  }
+  function setSamples(arr) {
+    localStorage.setItem(SAMPLE_KEY, JSON.stringify(arr));
+  }
+
+  function renderSamples() {
+    const all = getSamples();
+    const list = currentFilter === 'all' ? all : all.filter(s => s.field === currentFilter);
+    const el = document.getElementById('sampleList');
+    document.getElementById('sampleCount').textContent = `${all.length}개`;
+
+    if (!list.length) {
+      el.innerHTML = '<div class="sample-empty">등록된 샘플이 없습니다.<br/>왼쪽 폼에서 새 샘플을 추가하세요.</div>';
+      return;
+    }
+
+    el.innerHTML = list.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).map(s => {
+      const d = new Date(s.createdAt);
+      const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+      const preview = s.content.replace(/\n+/g,' ').slice(0, 120);
+      return `
+        <div class="sample-item">
+          <div class="si-top">
+            <div class="si-meta">
+              <span class="si-field">${s.field}</span>
+              <span class="si-title">${s.title || '(제목 없음)'}</span>
+            </div>
+            <div class="si-actions">
+              <button class="si-btn" onclick="editSample('${s.id}')">수정</button>
+              <button class="si-btn del" onclick="deleteSample('${s.id}')">삭제</button>
+            </div>
+          </div>
+          <div class="si-preview">${preview}…</div>
+          <div class="si-date">등록일 ${dateStr} · ${s.content.length.toLocaleString()}자</div>
+        </div>`;
+    }).join('');
+  }
+
+  function filterSamples(field, chip) {
+    currentFilter = field;
+    document.querySelectorAll('.fc-chip').forEach(c => c.classList.remove('on'));
+    chip.classList.add('on');
+    renderSamples();
+  }
+
+  function saveSample() {
+    const field   = document.getElementById('sampleField').value.trim();
+    const title   = document.getElementById('sampleTitle').value.trim();
+    const content = document.getElementById('sampleContent').value.trim();
+    if (!field)   { toast('분야를 선택해주세요.'); return; }
+    if (!content) { toast('자기소개서 내용을 입력해주세요.'); return; }
+
+    const samples = getSamples();
+    const editId  = document.getElementById('editingId').value;
+
+    if (editId) {
+      // 수정
+      const idx = samples.findIndex(s => s.id === editId);
+      if (idx !== -1) { samples[idx] = { ...samples[idx], field, title, content }; }
+      cancelEdit();
+    } else {
+      // 신규
+      samples.push({ id: 'sp_' + Date.now(), field, title, content, createdAt: new Date().toISOString() });
+    }
+
+    setSamples(samples);
+    clearSampleForm();
+    renderSamples();
+    const ok = document.getElementById('save-ok-sample');
+    ok.classList.add('show');
+    setTimeout(() => ok.classList.remove('show'), 2500);
+    toast('샘플이 저장되었습니다.', 'ok');
+  }
+
+  function editSample(id) {
+    const s = getSamples().find(s => s.id === id);
+    if (!s) return;
+    document.getElementById('editingId').value      = id;
+    document.getElementById('sampleField').value    = s.field;
+    document.getElementById('sampleTitle').value    = s.title || '';
+    document.getElementById('sampleContent').value  = s.content;
+    document.getElementById('sampleFormTitle').textContent = '✏️ 샘플 수정';
+    document.getElementById('editBanner').classList.add('show');
+    document.getElementById('cancelEditBtn').style.display = 'block';
+    document.getElementById('sampleField').scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+
+  function cancelEdit() {
+    clearSampleForm();
+    document.getElementById('editingId').value = '';
+    document.getElementById('sampleFormTitle').textContent = '➕ 새 샘플 등록';
+    document.getElementById('editBanner').classList.remove('show');
+    document.getElementById('cancelEditBtn').style.display = 'none';
+  }
+
+  function clearSampleForm() {
+    document.getElementById('sampleField').value   = '';
+    document.getElementById('sampleTitle').value   = '';
+    document.getElementById('sampleContent').value = '';
+  }
+
+  function deleteSample(id) {
+    if (!confirm('이 샘플을 삭제하시겠습니까?')) return;
+    setSamples(getSamples().filter(s => s.id !== id));
+    renderSamples();
+    toast('삭제되었습니다.', 'ok');
   }
 
   /* ── 비밀번호 변경 ── */
