@@ -155,6 +155,33 @@
     .edit-mode-banner { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:8px; padding:10px 14px; font-size:0.8rem; color:var(--warn); margin-bottom:16px; display:none; }
     .edit-mode-banner.show { display:block; }
 
+    /* ── 백업/복원 ── */
+    .backup-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    @media(max-width:720px){ .backup-grid{grid-template-columns:1fr} }
+    .backup-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:28px; }
+    .backup-card h3 { font-size:1rem; font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+    .backup-card p { font-size:0.82rem; color:var(--muted); margin-bottom:20px; line-height:1.7; }
+    .backup-card.full { grid-column:1/-1; }
+    .btn-export { width:100%; padding:13px; background:linear-gradient(135deg,#059669,#10b981); border:none; border-radius:var(--r); color:white; font-family:inherit; font-size:0.95rem; font-weight:700; cursor:pointer; transition:opacity 0.2s; margin-bottom:10px; }
+    .btn-export:hover { opacity:0.88; }
+    .btn-import-wrap { position:relative; }
+    .btn-import { width:100%; padding:13px; background:linear-gradient(135deg,#0e7490,#06b6d4); border:none; border-radius:var(--r); color:white; font-family:inherit; font-size:0.95rem; font-weight:700; cursor:pointer; transition:opacity 0.2s; }
+    .btn-import:hover { opacity:0.88; }
+    .btn-import-wrap input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
+    .backup-info { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--r); padding:16px; margin-top:16px; }
+    .backup-info-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem; }
+    .backup-info-row:last-child { border-bottom:none; padding-bottom:0; }
+    .backup-info-row .bi-label { color:var(--muted); }
+    .backup-info-row .bi-val { font-weight:600; }
+    .history-item { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem; }
+    .history-item:last-child { border-bottom:none; }
+    .hi-time { color:var(--muted); font-size:0.78rem; }
+    .hi-label { font-weight:600; }
+    .drop-zone { border:2px dashed var(--border); border-radius:var(--r); padding:32px; text-align:center; color:var(--muted); font-size:0.88rem; transition:all 0.2s; cursor:pointer; position:relative; }
+    .drop-zone:hover, .drop-zone.over { border-color:var(--teal); color:var(--teal); background:rgba(6,182,212,0.04); }
+    .drop-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
+    .drop-icon { font-size:2rem; margin-bottom:8px; }
+
     /* ── 토스트 ── */
     .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(16px); background:rgba(20,15,40,0.95); border:1px solid rgba(167,139,250,0.3); border-radius:10px; padding:12px 22px; font-size:0.88rem; font-weight:600; color:var(--text); opacity:0; transition:all 0.3s; z-index:999; pointer-events:none; backdrop-filter:blur(16px); }
     .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
@@ -195,6 +222,7 @@
       <button class="nav-item" onclick="showSection('ads',this)"><span class="ni">📺</span> 광고 설정</button>
       <button class="nav-item" onclick="showSection('pricing',this)"><span class="ni">💰</span> 요금제 설정</button>
       <button class="nav-item" onclick="showSection('samples',this)"><span class="ni">📁</span> 샘플 관리</button>
+      <button class="nav-item" onclick="showSection('backup',this)"><span class="ni">💾</span> 백업/복원</button>
       <button class="nav-item" onclick="showSection('password',this)"><span class="ni">🔒</span> 보안</button>
     </div>
     <div class="sidebar-footer">
@@ -437,6 +465,51 @@
       </div>
     </div>
 
+    <!-- ── 백업/복원 ── -->
+    <div class="section" id="sec-backup">
+      <div class="page-title">백업 & 복원</div>
+      <div class="page-sub">설정·샘플 데이터를 파일로 내보내거나 가져올 수 있습니다. 다른 기기·브라우저에서도 동일한 환경을 유지하세요.</div>
+
+      <div class="backup-grid">
+
+        <!-- 내보내기 -->
+        <div class="backup-card">
+          <h3>⬇️ 설정 내보내기</h3>
+          <p>현재 저장된 모든 설정(API 키, 광고, 요금제, 샘플)을 JSON 파일로 다운로드합니다.<br/>비밀번호는 보안상 포함되지 않습니다.</p>
+          <button class="btn-export" onclick="exportBackup()">📦 백업 파일 다운로드</button>
+          <div class="backup-info" id="exportInfo">
+            <div class="backup-info-row"><span class="bi-label">설정 항목</span><span class="bi-val" id="bi-cfg">—</span></div>
+            <div class="backup-info-row"><span class="bi-label">저장된 샘플</span><span class="bi-val" id="bi-samples">—</span></div>
+            <div class="backup-info-row"><span class="bi-label">마지막 내보내기</span><span class="bi-val" id="bi-lastExport">없음</span></div>
+          </div>
+        </div>
+
+        <!-- 가져오기 -->
+        <div class="backup-card">
+          <h3>⬆️ 설정 가져오기</h3>
+          <p>이전에 내보낸 JSON 파일을 불러오면 설정이 복원됩니다.<br/>기존 설정은 덮어씌워집니다.</p>
+          <div class="drop-zone" id="dropZone"
+            ondragover="event.preventDefault();this.classList.add('over')"
+            ondragleave="this.classList.remove('over')"
+            ondrop="handleDrop(event)">
+            <input type="file" accept=".json" onchange="importBackup(this.files[0])" />
+            <div class="drop-icon">📂</div>
+            <div>파일을 여기에 끌어다 놓거나 클릭하여 선택하세요</div>
+            <div style="font-size:0.75rem;margin-top:6px;opacity:0.6;">.json 파일만 가능</div>
+          </div>
+          <div class="save-ok" id="import-ok" style="margin-top:12px;">✅ 설정이 복원되었습니다.</div>
+        </div>
+
+        <!-- 변경 이력 -->
+        <div class="backup-card full">
+          <h3>📋 변경 이력</h3>
+          <p>최근 설정 저장 내역입니다.</p>
+          <div id="backupHistory"><div style="color:var(--muted);font-size:0.85rem;">이력이 없습니다.</div></div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ── 보안 ── -->
     <div class="section" id="sec-password">
       <div class="page-title">보안 설정</div>
@@ -510,6 +583,7 @@
     btn.classList.add('active');
     if (id === 'dashboard') loadStats();
     if (id === 'samples')   renderSamples();
+    if (id === 'backup')    refreshBackupInfo();
   }
 
   /* ── 설정 불러오기 ── */
@@ -606,6 +680,112 @@
     localStorage.removeItem(STAT_KEY);
     loadAll();
     toast('전체 초기화 완료.', 'ok');
+  }
+
+  /* ════════════════════════════════
+     백업 / 복원
+  ════════════════════════════════ */
+  const BACKUP_HISTORY_KEY = 'si_backup_history';
+
+  function refreshBackupInfo() {
+    const cfg     = JSON.parse(localStorage.getItem(CFG_KEY)    || '{}');
+    const samples = JSON.parse(localStorage.getItem(SAMPLE_KEY) || '[]');
+    const history = JSON.parse(localStorage.getItem(BACKUP_HISTORY_KEY) || '[]');
+
+    const cfgCount = Object.keys(cfg).filter(k => cfg[k]).length;
+    document.getElementById('bi-cfg').textContent     = `${cfgCount}개 항목`;
+    document.getElementById('bi-samples').textContent = `${samples.length}개`;
+
+    const last = history[0];
+    document.getElementById('bi-lastExport').textContent = last
+      ? new Date(last.at).toLocaleString('ko-KR') : '없음';
+
+    renderHistory(history);
+  }
+
+  function renderHistory(history) {
+    const el = document.getElementById('backupHistory');
+    if (!history.length) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">이력이 없습니다.</div>';
+      return;
+    }
+    const typeLabel = { export:'내보내기', import:'가져오기' };
+    const typeColor = { export:'var(--success)', import:'var(--teal)' };
+    el.innerHTML = history.slice(0, 20).map(h => `
+      <div class="history-item">
+        <div>
+          <span style="color:${typeColor[h.type]||'var(--text)'};font-weight:700;font-size:0.8rem;">${typeLabel[h.type]||h.type}</span>
+          <span class="hi-label" style="margin-left:10px;">${h.desc}</span>
+        </div>
+        <div class="hi-time">${new Date(h.at).toLocaleString('ko-KR')}</div>
+      </div>`).join('');
+  }
+
+  function addHistory(type, desc) {
+    const history = JSON.parse(localStorage.getItem(BACKUP_HISTORY_KEY) || '[]');
+    history.unshift({ type, desc, at: new Date().toISOString() });
+    if (history.length > 30) history.pop();
+    localStorage.setItem(BACKUP_HISTORY_KEY, JSON.stringify(history));
+  }
+
+  function exportBackup() {
+    const cfg     = JSON.parse(localStorage.getItem(CFG_KEY)    || '{}');
+    const samples = JSON.parse(localStorage.getItem(SAMPLE_KEY) || '[]');
+    // API 키는 포함하되 비밀번호는 제외
+    const backup = {
+      version:   '1.0',
+      exportedAt: new Date().toISOString(),
+      config:    cfg,
+      samples:   samples,
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const date = new Date().toISOString().slice(0,10);
+    a.download = `si-admin-backup-${date}.json`;
+    a.click();
+
+    addHistory('export', `설정 ${Object.keys(cfg).length}개 · 샘플 ${samples.length}개`);
+    refreshBackupInfo();
+    toast('백업 파일이 다운로드되었습니다.', 'ok');
+  }
+
+  function importBackup(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.version || !data.exportedAt) throw new Error('올바른 백업 파일이 아닙니다.');
+
+        if (!confirm(`백업 날짜: ${new Date(data.exportedAt).toLocaleString('ko-KR')}\n샘플 ${(data.samples||[]).length}개\n\n현재 설정을 이 백업으로 덮어씌우시겠습니까?`)) return;
+
+        if (data.config)  localStorage.setItem(CFG_KEY,    JSON.stringify(data.config));
+        if (data.samples) localStorage.setItem(SAMPLE_KEY, JSON.stringify(data.samples));
+
+        loadAll();        // 설정 폼 갱신
+        renderSamples();  // 샘플 목록 갱신
+
+        addHistory('import', `샘플 ${(data.samples||[]).length}개 복원`);
+        refreshBackupInfo();
+
+        const ok = document.getElementById('import-ok');
+        ok.classList.add('show');
+        setTimeout(() => ok.classList.remove('show'), 3000);
+        toast('설정이 복원되었습니다.', 'ok');
+      } catch(err) {
+        toast('파일 오류: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').classList.remove('over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.json')) importBackup(file);
+    else toast('JSON 파일만 가져올 수 있습니다.');
   }
 
   /* ════════════════════════════════
