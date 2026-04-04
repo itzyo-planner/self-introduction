@@ -36,9 +36,10 @@ admin.html   관리자 페이지 (/admin.html)
 2. AdSense 미설정 또는 테스트 모드 시 → 카운트다운 모의 광고 자동 표시
 3. AdSense 심사 통과 후 실제 리워드 광고 자동 전환
 
-## 배포 (GitHub Pages)
+## 배포
 
-Settings → Pages → Source: `main` 브랜치 `/root`
+- 서비스: https://self-introduction-3q0.pages.dev
+- 관리자: https://self-introduction-3q0.pages.dev/admin.html
 
 ## 기술 스택
 
